@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:developer';
 
+import 'chooseplatform.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -19,7 +21,7 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.dark,
       ),
       themeMode: ThemeMode.dark, 
-      home: const MyHomePage(title: 'Практика 3'),
+      home: const MyHomePage(title: 'Практика 5'),
     );
   }
 }
@@ -91,6 +93,10 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
+                  Center(
+                    child: ChoosePlatform(),
+                  ),
+
                   Text(
                     'Коновалов Артём Игоревич',
                   ),
