@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:developer';
+import 'package:go_router/go_router.dart';
+
 
 import 'chooseplatform.dart';
 
@@ -7,21 +9,42 @@ void main() {
   runApp(const MyApp());
 }
 
+final GoRouter _router = GoRouter(
+  routes: [
+    GoRoute(
+      path: "/",
+      builder: (context, state) => const MyHomePage(title: 'Практика 6'),
+    ),
+    GoRoute(
+      path: "/about",
+      builder: (context, state) =>  AboutPage(),
+    ),
+    GoRoute(
+      path: "/feedback",
+      builder: (context, state) =>  FeedbackPage(),
+    )
+  ],
+);
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
+
       title: 'Flutter Demo',
       theme: ThemeData(
         brightness: Brightness.light,
       ),
+      routerConfig: _router,
+
       darkTheme: ThemeData(
         brightness: Brightness.dark,
       ),
-      themeMode: ThemeMode.dark, 
-      home: const MyHomePage(title: 'Практика 5'),
+      themeMode: ThemeMode.dark,
+
     );
   }
 }
@@ -74,6 +97,10 @@ class _MyHomePageState extends State<MyHomePage> {
             icon: Icon(Icons.chat),
             label: 'Чат',
           ),
+          NavigationDestination(
+            icon: Icon(Icons.settings),
+            label: 'Настройки',
+          ),
         ],
       ),
 
@@ -93,6 +120,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
+
                   Center(
                     child: ChoosePlatform(),
                   ),
@@ -106,6 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   Text(
                       '22Б0675'
                   ),
+
                 ],
               ),
             ),
@@ -158,10 +187,96 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               ),
             ),
+
           ],
+        ),
+
+        // settings
+        Column(
+          children: [
+
+          ElevatedButton(
+            onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage())); },
+            child: const Text("Войти в аккаунт"),
+          ),
+          ElevatedButton(
+            onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpPage())); },
+            child: const Text("Зарегистрироваться"),
+          ),
+          ElevatedButton(
+            onPressed: () => context.go("/about"),
+            child: const Text("О нас"),
+          ),
+          ElevatedButton(
+            onPressed: () => context.go("/feedback"),
+            child: const Text("Оставить фидбек"),
+          )
+
+        ]
         ),
       ][currentPageIndex]
       
     );
+  }
+}
+
+
+class LoginPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.black,
+      child: Center(
+        child: Text("Скоро тут можно будет войти"),
+      ),
+    );
+  }
+}
+
+class SignUpPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.black,
+      child: Center(
+        child: Text("Зарегистрироваться"),
+      ),
+    );
+  }
+}
+
+class AboutPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+        children: [Container(
+        color: Colors.black,
+        child: Center(
+        child: Text("Страница о нас"),
+    ),
+    ),
+    ElevatedButton(
+    onPressed: () => context.go("/"),
+    child: const Text("Назад"),
+    )]);
+
+  }
+}
+
+class FeedbackPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [Container(
+      color: Colors.black,
+      child: Center(
+        child: Text("Тут можно будет оставить отзыв"),
+      ),
+    ),
+    ElevatedButton(
+    onPressed: () => context.go("/"),
+    child: const Text("Назад"),
+    )]);
+
   }
 }
