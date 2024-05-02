@@ -1,6 +1,10 @@
+import 'dart:convert';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'dart:developer';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 
 
 import 'chooseplatform.dart';
@@ -13,7 +17,7 @@ final GoRouter _router = GoRouter(
   routes: [
     GoRoute(
       path: "/",
-      builder: (context, state) => const MyHomePage(title: 'Практика 6'),
+      builder: (context, state) => const MyHomePage(title: 'Практика 8'),
     ),
     GoRoute(
       path: "/about",
@@ -56,6 +60,30 @@ class MyHomePage extends StatefulWidget {
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
+Future<String> loading() {
+  return Future.delayed(const Duration(seconds: 3), () => 'Загрузка заверешена');
+}
+void loadData() {
+  Future<String> messageFuture = loading();
+  String val = '';
+  messageFuture.then((value) {
+    val = value;
+    print(val);
+  });
+}
+
+Future<Map<String, dynamic>> fetchWeatherData(String city) async {
+  const url = 'http://www.randomnumberapi.com/api/v1.0/random?min=-5&max=40&count=1';
+  final response = await http.get(Uri.parse(url));
+
+  if (response.statusCode == 200) {
+    return {'data': json.decode(response.body)};
+  } else {
+    throw Exception('Failed to load weather data');
+  }
+}
+
+
 
 class _MyHomePageState extends State<MyHomePage> {
   int currentPageIndex = 0;
@@ -72,10 +100,14 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     }
   }
+  Future<Map<String, dynamic>>? _weatherData;
+
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    _weatherData = fetchWeatherData("London");
+    loadData();
 
     return Scaffold(
       // navbar
@@ -98,6 +130,10 @@ class _MyHomePageState extends State<MyHomePage> {
             label: 'Чат',
           ),
           NavigationDestination(
+            icon: Icon(Icons.cloudy_snowing),
+            label: 'Погода',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.settings),
             label: 'Настройки',
           ),
@@ -110,7 +146,6 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: <Widget>[
-
         // homepage
         const Card(
           shadowColor: Colors.transparent,
@@ -120,6 +155,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
+                  Image(image: AssetImage('assets/images/image.jpg')),
 
                   Center(
                     child: ChoosePlatform(),
@@ -134,7 +170,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   Text(
                       '22Б0675'
                   ),
-
                 ],
               ),
             ),
@@ -190,6 +225,50 @@ class _MyHomePageState extends State<MyHomePage> {
 
           ],
         ),
+
+
+        // weather
+        Column(
+          children: [
+            Center(
+                child: FutureBuilder<Map<String, dynamic>>(
+                  future: _weatherData,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      return Text("Error: ${snapshot.error}");
+                    } else {
+                      String imageUrl;
+                      if (snapshot.data!['data']![0] < 5){
+                        imageUrl = 'https://aif-s3.aif.ru/images/013/209/512dd3bd076af25ab229ea743096d7af.jpg';
+                      }
+                      else if (snapshot.data!['data']![0] < 15){
+                        imageUrl = 'https://static.tildacdn.com/tild3133-3463-4033-b236-666461356539/_2023-09-14_12045968.png';
+                      }
+                      else if (snapshot.data!['data']![0] < 30){
+                        imageUrl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4ApWCUUaHWa_3uWIez7X_c3eBVzDb6Gc043kz518w-g&s';
+                      }
+                      else {
+                        imageUrl = 'https://natureyav.ru/foto/zhara.jpg';
+                      }
+
+
+                      return Column(
+                        children: [
+                          Text("Температура сейчас ${snapshot.data!['data']![0]}°C"),
+                            CachedNetworkImage(
+                            imageUrl: imageUrl,
+                            )
+                        ]
+                      );
+                    }
+                  },
+              ),
+            ),
+          ],
+        ),
+
 
         // settings
         Column(
