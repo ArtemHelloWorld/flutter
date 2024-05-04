@@ -258,7 +258,12 @@ class _MyHomePageState extends State<MyHomePage> {
                         children: [
                           Text("Температура сейчас ${snapshot.data!['data']![0]}°C"),
                             CachedNetworkImage(
-                            imageUrl: imageUrl,
+                              imageUrl: imageUrl,
+                              progressIndicatorBuilder: (context, url, progress) =>
+                                  const CircularProgressIndicator(),
+                              errorWidget: (context, url, error) => const Center(
+                                child: Icon(Icons.error, color: Colors.red),
+                              ),
                             )
                         ]
                       );
