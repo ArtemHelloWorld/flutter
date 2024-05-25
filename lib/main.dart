@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'dart:developer';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
@@ -12,6 +13,34 @@ import 'chooseplatform.dart';
 void main() {
   runApp(const MyApp());
 }
+
+final getIt = GetIt.instance.registerSingleton(Admins());
+class Admins {
+  String message = "Вы админ";
+}
+
+class UserInheritedWidget extends InheritedWidget {
+  final Widget child;
+  final String email;
+  final String name;
+
+  const UserInheritedWidget({
+    Key? key,
+    required this.child,
+    required this.email,
+    required this.name,
+  }) : super(key: key, child: child);
+
+  static UserInheritedWidget? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<UserInheritedWidget>();
+  }
+
+  @override
+  bool updateShouldNotify(UserInheritedWidget oldWidget) {
+    return name != oldWidget.name || email != oldWidget.email;
+  }
+}
+
 
 final GoRouter _router = GoRouter(
   routes: [
@@ -278,7 +307,10 @@ class _MyHomePageState extends State<MyHomePage> {
         // settings
         Column(
           children: [
-
+          ElevatedButton(
+              onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage())); },
+              child: const Text("Профиль"),
+            ),
           ElevatedButton(
             onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage())); },
             child: const Text("Войти в аккаунт"),
@@ -305,13 +337,63 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 
+class ProfilePage extends StatelessWidget {
+  String name = 'Artem';
+  String email = 'lublupoest@mail.ru';
+  @override
+  Widget build(BuildContext context) {
+    return UserInheritedWidget(
+      email: email,
+      name: name,
+      child: Scaffold(
+          appBar: AppBar(
+            centerTitle: true,
+          ),
+          body: SafeArea(
+            child: UserProfilePage(),
+          ),
+      ),
+    );
+
+  }
+}
+class UserProfilePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final userInherited = UserInheritedWidget.of(context)!;
+
+    return Scaffold(
+      body:  SafeArea(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Column(
+              children:[
+                Column(
+                  children: [
+                    const Text("email", style: TextStyle(fontSize: 14)),
+                    Text(userInherited.email, style: const TextStyle(fontSize: 24)),
+                    const Text("name", style: TextStyle(fontSize: 14)),
+                    Text(userInherited.name, style: const TextStyle(fontSize: 24))
+                  ],
+                ),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
       color: Colors.black,
       child: Center(
-        child: Text("Скоро тут можно будет войти"),
+        child: Text(getIt.message
+        ),
       ),
     );
   }
