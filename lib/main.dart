@@ -2,22 +2,52 @@ import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'dart:developer';
+import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 
-
+import 'loginpage.dart';
+import 'userprofile.dart';
 import 'chooseplatform.dart';
+import 'chats.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
+final getIt = GetIt.instance.registerSingleton(Admins());
+class Admins {
+  String message = "Вы админ";
+}
+
+class UserInheritedWidget extends InheritedWidget {
+  final Widget child;
+  final String email;
+  final String name;
+
+  const UserInheritedWidget({
+    Key? key,
+    required this.child,
+    required this.email,
+    required this.name,
+  }) : super(key: key, child: child);
+
+  static UserInheritedWidget? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<UserInheritedWidget>();
+  }
+
+  @override
+  bool updateShouldNotify(UserInheritedWidget oldWidget) {
+    return name != oldWidget.name || email != oldWidget.email;
+  }
+}
+
+
 final GoRouter _router = GoRouter(
   routes: [
     GoRoute(
       path: "/",
-      builder: (context, state) => const MyHomePage(title: 'Практика 8'),
+      builder: (context, state) => const MyHomePage(title: 'Итоговая работа'),
     ),
     GoRoute(
       path: "/about",
@@ -88,24 +118,12 @@ Future<Map<String, dynamic>> fetchWeatherData(String city) async {
 class _MyHomePageState extends State<MyHomePage> {
   int currentPageIndex = 0;
 
-  List<String> messages = [];
-  TextEditingController messageController = TextEditingController();
 
-  void sendMessage() {
-    String message = messageController.text;
-    if (message.isNotEmpty) {
-      setState(() {
-        messages.add(message);
-        messageController.clear();
-      });
-    }
-  }
   Future<Map<String, dynamic>>? _weatherData;
 
 
   @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
+  Widget build(  context) {
     _weatherData = fetchWeatherData("London");
     loadData();
 
@@ -177,54 +195,8 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
 
         // chat
-        Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: messages.length,
-                itemBuilder: (context, index) {
-                  return Align(
-                    alignment: Alignment.centerRight,
-                    child: Container(
-                      margin: const EdgeInsets.all(8.0),
-                      padding: const EdgeInsets.all(8.0),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary,
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      child: Text(
-                        messages[index],
-                        style: theme.textTheme.bodyLarge!
-                            .copyWith(color: theme.colorScheme.onPrimary),
-                      ),
-                    ),
-                  );
-                }
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: messageController,
-                      decoration: const InputDecoration(
-                        hintText: 'Сообщение...',
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.send),
-                    onPressed: sendMessage,
-                    color: Colors.deepPurple,
-                  ),
-                ],
-              ),
-            ),
+        ChatsPage(),
 
-          ],
-        ),
 
 
         // weather
@@ -278,7 +250,10 @@ class _MyHomePageState extends State<MyHomePage> {
         // settings
         Column(
           children: [
-
+          ElevatedButton(
+              onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => UserProfilePage())); },
+              child: const Text("Профиль"),
+            ),
           ElevatedButton(
             onPressed: () { Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage())); },
             child: const Text("Войти в аккаунт"),
@@ -305,17 +280,7 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 
-class LoginPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.black,
-      child: Center(
-        child: Text("Скоро тут можно будет войти"),
-      ),
-    );
-  }
-}
+
 
 class SignUpPage extends StatelessWidget {
   @override
